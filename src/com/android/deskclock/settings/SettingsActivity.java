@@ -42,8 +42,6 @@ import com.android.deskclock.data.Weekdays;
 import com.android.deskclock.ringtone.RingtonePickerActivity;
 import com.android.deskclock.widget.CollapsingToolbarBaseActivity;
 
-import java.util.List;
-
 /**
  * Settings for the Alarm Clock.
  */
@@ -275,28 +273,23 @@ public final class SettingsActivity extends CollapsingToolbarBaseActivity {
             timerRingtonePref.setOnPreferenceClickListener(this);
             timerRingtonePref.setSummary(DataModel.getDataModel().getTimerRingtoneTitle());
 
-            SensorManager sensorManager = (SensorManager)
-                    getActivity().getSystemService(Context.SENSOR_SERVICE);
-
             final SimpleMenuPreference flipActionPref = findPreference(KEY_FLIP_ACTION);
-            if (flipActionPref != null) {
-                List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_ORIENTATION);
-                if (sensorList.size() < 1) { // This will be true if no orientation sensor
-                    flipActionPref.setValue("0"); // Turn it off
-                } else {
-                    flipActionPref.setSummary(flipActionPref.getEntry());
-                    flipActionPref.setOnPreferenceChangeListener(this);
-                }
-            }
+            setupFlipOrShakeAction(flipActionPref);
 
             final SimpleMenuPreference shakeActionPref = findPreference(KEY_SHAKE_ACTION);
-            if (shakeActionPref != null) {
-                List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
-                if (sensorList.size() < 1) { // This will be true if no accelerometer sensor
-                    shakeActionPref.setValue("0"); // Turn it off
+            setupFlipOrShakeAction(shakeActionPref);
+        }
+
+        private void setupFlipOrShakeAction(SimpleMenuPreference preference) {
+            if (preference != null) {
+                SensorManager sensorManager = (SensorManager)
+                        getActivity().getSystemService(Context.SENSOR_SERVICE);
+                if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) == null) {
+                    preference.setValue("0");  // Turn it off
+                    preference.setVisible(false);
                 } else {
-                    shakeActionPref.setSummary(shakeActionPref.getEntry());
-                    shakeActionPref.setOnPreferenceChangeListener(this);
+                    preference.setSummary(preference.getEntry());
+                    preference.setOnPreferenceChangeListener(this);
                 }
             }
         }
